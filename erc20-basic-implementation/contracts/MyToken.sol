@@ -41,7 +41,7 @@ contract MyToken {
         uint256 currentAllowance = allowances[from][msg.sender];
         require(currentAllowance >= amount, "ERC20 : transfer amount exceeds allowance");
         allowances[from][msg.sender] = currentAllowance - amount;
-        _transfer(from, to, amount);
+        _transfer(from, to, amount);    
         return true;
 
     }
