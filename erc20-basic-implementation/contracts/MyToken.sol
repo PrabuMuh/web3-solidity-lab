@@ -32,7 +32,7 @@ contract MyToken {
         emit Approval(msg.sender, spender, amount);
         return true;
     }
-
+            
     function allowance(address owner, address spender) external view returns (uint256){
         return allowances[owner][spender];
     }

@@ -25,7 +25,7 @@ contract MyToken {
     ) {
         name = _name;
         symbol = _symbol;
-        totalSupply = _initialSupply;
+        totalSupply = _initialSupply ;
         owner = msg.sender;
         balances[owner] = _initialSupply;
         emit Transfer(address(0), owner, _initialSupply);

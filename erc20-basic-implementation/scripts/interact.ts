@@ -1,25 +1,59 @@
 import { network } from "hardhat";
 
-const { ethers } = await network.connect();
+const { ethers, networkName } = await network.connect();
+const [signer1, signer2,signer3] = await ethers.getSigners();
+console.log(`Deploying Counter to ${networkName}...`);
+const myToken = await ethers.deployContract("MyToken",[ethers.parseEther("1000")]);
 
-const [signer] = await ethers.getSigners();
-console.log(signer.address);
-const myToken = await ethers.getContractAt("MyToken","0x5FbDB2315678afecb367f032d93F642f64180aa3", signer);
-const myBalance = await myToken.balanceOf(signer.address);
-console.log(myBalance.toString());
+console.log("Waiting for the deployment tx to confirm");
+await myToken.waitForDeployment();
 
-const tx = await myToken.transfer("0x70997970c51812dc3a010c7d01b50e0d17dc79c8",100);
-await tx.wait();
-console.log("Transfer completed");
-const friendBalance = await myToken.balanceOf("0x70997970c51812dc3a010c7d01b50e0d17dc79c8");
+// alamat kontrak yang sudah dideploy
+console.log("MyToken address:", await myToken.getAddress());
 
-// console.log("data sudah diterima: di adress 0x70997970c51812dc3a010c7d01b50e0d17dc79c8");
-console.log(friendBalance.toString());
+// ? Fungsi Cek Balance Token
 
-// kasih izin ke spender untuk mengambil token kita
-const approveTx = await myToken.approve("0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", 50);
-await approveTx.wait();
-console.log("Approval completed");
+// ! cek balance dari akun pertama
+const balanceAccount1 = await myToken.balanceOf(signer1.address);
+console.log(`Balance akun ke 1: ${balanceAccount1.toString()}`);
 
-const allowance = await myToken.allowance(signer.address, "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC");
-console.log(allowance.toString());
+// ! cek balance dari akun kedua sebelum transfer
+const balanceAccount2Before = await myToken.balanceOf(signer2.address);
+console.log(`Balance akun ke 2 sebelum transfer: ${balanceAccount2Before.toString()}`);
+
+
+// ? Fungsi Transfer Token
+// ! transfer token ke akun kedua
+const transferToAccount2 = await myToken.connect(signer1).transfer(signer2.address, ethers.parseEther("10"));
+await transferToAccount2.wait();
+console.log(`Transfer 10 token ke akun ke-2 berhasil`);
+
+// ! cek balance dari akun kedua setelah transfer
+const balanceAccount2After = await myToken.balanceOf(signer2.address);
+console.log(`Balance akun ke 2 setelah di transfer: ${balanceAccount2After.toString()}`);
+
+// ! cek balance dari akun pertama setelah transfer
+const balanceAccount1After = await myToken.balanceOf(signer1.address);
+console.log(`Balance akun ke 1 setelah di transfer: ${balanceAccount1After.toString()}`);
+
+// ? Fungsi Approve 
+// ! approve akun kedua untuk menggunakan token dari akun pertama
+const approveAccoutnt2 = await myToken.connect(signer1).approve(signer2.address, ethers.parseEther("5"));
+await approveAccoutnt2.wait();
+console.log(`Approve akun ke-2 untuk menggunakan 5 token dari akun ke-1 berhasil`);
+
+// ? fungsi allowance
+// cek allowance dari akun kedua untuk menggunakan token dari akun pertama
+const allowanceAccount2 = await myToken.allowance(signer1.address, signer2.address);
+console.log("nilai dari allowance akun ke 2 untuk menggunakan token dari akun ke 1 yaitu :", allowanceAccount2.toString());
+
+// ? fungsi transferFrom
+// ! transfer token dari akun pertama ke akun ke 3 menggunakan akun kedua
+const transferFromAccount2ToAccount3 = await myToken.connect(signer2).transferFrom(signer1.address, signer3.address, ethers.parseEther("3"))
+await transferFromAccount2ToAccount3.wait();
+const balanceAccount3 = await myToken.balanceOf(signer3.address)
+console.log("token address ke 3: ", balanceAccount3.toString())
+
+// nilai allowance setelah transferFrom di akun kedua
+const allowanceAccount2After = await myToken.allowance(signer1.address, signer2.address);
+console.log("nilai dari allowance akun ke 2 untuk menggunakan token dari akun ke 1 setelah transferFrom yaitu :", allowanceAccount2After.toString());
