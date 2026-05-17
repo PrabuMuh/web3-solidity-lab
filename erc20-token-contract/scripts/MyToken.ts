@@ -1,6 +1,6 @@
 import { network } from "hardhat";
 
-const { ethers, networkName } = await network.connect();
+const { ethers, networkName } = await network.create();
 
 console.log(`Deploying Counter to ${networkName}...`);
 

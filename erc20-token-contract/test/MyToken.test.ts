@@ -129,7 +129,7 @@ describe("MyToken", function () {
     expect(await token.allowance(owner.address, spender.address)).to.equal(ethers.parseEther("100"));
     await token.connect(owner).decreaseAllowance(spender.address, ethers.parseEther("30"));
     expect(await token.allowance(owner.address, spender.address)).to.equal(ethers.parseEther("70"));
-    await expect(token.connect(owner).decreaseAllowance(spender.address, ethers.parseEther("80"))).to.be.revertedWith("decrease allowance below zero");
+    await expect(token.connect(owner).decreaseAllowance(spender.address, ethers.parseEther("80"))).to.be.revertedWith("decreased allowance below zero");
   });
 
 });

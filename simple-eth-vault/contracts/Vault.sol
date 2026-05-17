@@ -32,7 +32,7 @@ contract Vault {
         require(amount > 0, "Withdraw amount must be greater than zero");
         require(balances[msg.sender] >= amount, "Insufficient balance");
         balances[msg.sender] -= amount;
-        (bool success, ) = msg.sender.call{value: amount}("");
+        (bool success, ) = msg.sender.call{value: amount}("");      
         require(success, "Transfer failed");
         emit Withdrawn(msg.sender, amount);
     }

@@ -51,12 +51,8 @@ contract MyToken {
     }
 
     // fungsi transfer adalah fungsi yang digunakan untuk mentransfer token dari satu alamat ke alamat lain
-    function transfer(address to, uint256 amount) external returns (bool) {
-        require(to != address(0), "invalid address");
-        require(balances[msg.sender] >= amount, "insufficient balance");
-        balances[msg.sender] -= amount;
-        balances[to] += amount;
-        emit Transfer(msg.sender, to, amount);  
+    function transfer(address to, uint256 amount) external returns (bool) { 
+        _transfer(msg.sender, to, amount);       
         return true;
     }
 
@@ -71,24 +67,29 @@ contract MyToken {
 
     /* fungsi trasnferFrom adalah fungsi yang digunakan untuk mentrasnfer token dari satu alamat ke alamat lain 
      dengan menggunakan allowance yang sudah disetujui sebelumnya */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        uint256 currentAllowance = allowance[from][msg.sender];
+        require(currentAllowance >= amount,"transfer amount exceeds allowance");
+        if(currentAllowance != type(uint256).max) {
+            allowance[from][msg.sender] = currentAllowance - amount;
+        }
+        _transfer(from, to, amount);
+        return true;
+    }
+    function _transfer(address from, address to, uint256 amount) internal {
         require(from != address(0), "invalid from address");
         require(to != address(0), "invalid to address");
-        require(allowance[from][msg.sender] >= amount, "allowance exceeded");
         require(balances[from] >= amount, "insufficient balance");
         balances[from] -= amount;
         balances[to] += amount;
-        allowance[from][msg.sender] -= amount;
         emit Transfer(from, to, amount);
-        return true;
     }
 
     // fungsi increaseAllowance adalah fungsi yang digunakan untuk menambah allowance yang sudah disetujui sebelumnya
-    function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
+    function increaseAllowance(
+        address spender,
+        uint256 addedValue
+    ) external returns (bool) {
         require(spender != address(0), "invalid address");
         allowance[msg.sender][spender] += addedValue;
         emit Approval(msg.sender, spender, allowance[msg.sender][spender]);
@@ -96,20 +97,18 @@ contract MyToken {
     }
 
     // fungsi decreaseAllowance adalah fungsi yang digunakan untuk mengurangi allowance yang sudah disetujui sebelumnya
-    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
+    function decreaseAllowance(
+        address spender,
+        uint256 subtractedValue
+    ) external returns (bool) {
         require(spender != address(0), "invalid address");
         uint256 currentAllowance = allowance[msg.sender][spender];
-        require(currentAllowance >= subtractedValue, "decreased allowance below zero");
+        require(
+            currentAllowance >= subtractedValue,
+            "decreased allowance below zero"
+        );
         allowance[msg.sender][spender] = currentAllowance - subtractedValue;
-        emit Approval(msg.sender, spender, allowance[msg.sender][spender]);        
+        emit Approval(msg.sender, spender, allowance[msg.sender][spender]);
         return true;
     }
-
-
-
-
-
-
-
-
 }
